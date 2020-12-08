@@ -33,7 +33,6 @@ const App = () => {
       });
     }
     window.addEventListener('keydown', event => {
-      console.log(event.key);
       if (event.key === 'Esc' || event.key === 'Escape') {
         getFrameset()?.setAttribute('rows', '42,*');
         inputRef.current?.blur();
