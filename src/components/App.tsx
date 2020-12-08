@@ -11,20 +11,21 @@ const getFrameset = (theWindow: Window) => {
 };
 
 const expandFrameListener = (inputRef: RefObject<HTMLInputElement>, event: KeyboardEvent) => {
-  const activeElement = (top.document.activeElement as HTMLFrameElement)?.contentDocument?.activeElement;
   if (
     inputRef.current &&
     inputRef.current.ownerDocument.defaultView &&
-    event.key === '`' &&
-    (!activeElement ||
-      activeElement.tagName.toLowerCase() !== 'input' ||
-      activeElement.getAttribute('type') !== 'text' ||
-      (activeElement as HTMLInputElement).disabled)
+    (event.key === 'Esc' || event.key === 'Escape')
   ) {
-    const framesetElement = getFrameset(inputRef.current.ownerDocument.defaultView);
-    event.preventDefault();
-    framesetElement?.setAttribute('rows', '50%,50%');
-    inputRef.current?.focus();
+    const frame = inputRef.current.ownerDocument.defaultView;
+    const framesetElement = getFrameset(frame);
+    if (frame === top.frames[1] && frame.document.activeElement === inputRef.current) {
+      getFrameset(top.frames[1])?.setAttribute('rows', '42,*');
+      inputRef.current?.blur();
+    } else {
+      event.preventDefault();
+      framesetElement?.setAttribute('rows', '50%,50%');
+      inputRef.current?.focus();
+    }
   }
 };
 
@@ -47,18 +48,11 @@ const App = () => {
   const handleUnloadFrame = useCallback(frame => unloadFrameCallback(frame, handleKeyDown), [handleKeyDown]);
 
   useEffect(() => {
-    for (let i = 0; i < top.frames.length; i++) {
-      const frame = top.frames[i];
+    for (const frame of [top.frames[0], top.frames[1], top.frames[2], top.frames[3]]) {
       frame.onkeydown = handleKeyDown;
       frame.addEventListener('unload', handleUnloadFrame.bind(null, frame));
     }
     top.onkeydown = handleKeyDown;
-    top.frames[1].addEventListener('keydown', event => {
-      if (event.key === 'Esc' || event.key === 'Escape') {
-        getFrameset(top.frames[1])?.setAttribute('rows', '42,*');
-        inputRef.current?.blur();
-      }
-    });
   }, [inputRef, handleKeyDown, handleUnloadFrame]);
 
   const updateContents = useCallback(async () => {
