@@ -72,7 +72,7 @@ const App = () => {
         await fetch(`/KoLmafia/submitCommand?pwd=${pwd}&cmd=${command}`, {
           method: 'GET',
         });
-        for (const delayMs of [100, 200, 400, 800, 1600, 3200]) {
+        for (const delayMs of [100, 200, 200, 200, 300, 300, 300, 300]) {
           setTimeout(updateContents, delayMs);
         }
       } catch (e) {

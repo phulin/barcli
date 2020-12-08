@@ -18,6 +18,7 @@ const GcliDisplay = ({
         overflow: 'scroll',
       }}
       ref={innerRef}
+      id="gcli-display"
     >
       {contents.map(chunk => (
         <div key={chunk.id} dangerouslySetInnerHTML={{ __html: chunk.text }} />
