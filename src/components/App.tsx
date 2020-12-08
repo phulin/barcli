@@ -6,20 +6,22 @@ import GcliInput from './GcliInput';
 
 const LINE_COUNT_LIMIT = 300;
 
-const getFrameset = () => {
-  let frameElement: Element | null = window.frameElement;
-  while (frameElement && frameElement.tagName.toLowerCase() !== 'frameset') {
-    frameElement = frameElement.parentElement;
-  }
-  return frameElement;
+const getFrameset = (theWindow: Window) => {
+  return theWindow.frameElement.closest('frameset');
 };
 
-const expandFrameListener = (
-  inputRef: RefObject<HTMLInputElement>,
-  framesetElement: Element | null,
-  event: KeyboardEvent
-) => {
-  if (event.key === '`') {
+const expandFrameListener = (inputRef: RefObject<HTMLInputElement>, event: KeyboardEvent) => {
+  const activeElement = (top.document.activeElement as HTMLFrameElement)?.contentDocument?.activeElement;
+  if (
+    inputRef.current &&
+    inputRef.current.ownerDocument.defaultView &&
+    event.key === '`' &&
+    (!activeElement ||
+      activeElement.tagName.toLowerCase() !== 'input' ||
+      activeElement.getAttribute('type') !== 'text' ||
+      (activeElement as HTMLInputElement).disabled)
+  ) {
+    const framesetElement = getFrameset(inputRef.current.ownerDocument.defaultView);
     event.preventDefault();
     framesetElement?.setAttribute('rows', '50%,50%');
     inputRef.current?.focus();
@@ -33,22 +35,36 @@ const App = () => {
 
   const pwd = useMemo(() => document.getElementsByTagName('body')[0]?.getAttribute('data-pwd') || '', []);
 
+  const handleKeyDown = useMemo(() => expandFrameListener.bind(null, inputRef), [inputRef]);
+
+  const handleUnloadFrame = useCallback(
+    (frame: Window) => {
+      top.setTimeout(() => frame.addEventListener('keydown', handleKeyDown), 10);
+    },
+    [handleKeyDown]
+  );
+
   useEffect(() => {
-    const framesetElement = getFrameset();
     for (let i = 0; i < top.frames.length; i++) {
       const frame = top.frames[i];
-      frame.addEventListener('keydown', expandFrameListener.bind(null, inputRef, framesetElement));
+      frame.onkeydown = handleKeyDown;
+      frame.addEventListener('unload', handleUnloadFrame.bind(null, frame));
     }
-    top.addEventListener('keydown', expandFrameListener.bind(null, inputRef, framesetElement));
-    window.addEventListener('keydown', event => {
+    top.onkeydown = handleKeyDown;
+    top.frames[1].addEventListener('keydown', event => {
       if (event.key === 'Esc' || event.key === 'Escape') {
-        getFrameset()?.setAttribute('rows', '42,*');
+        getFrameset(top.frames[1])?.setAttribute('rows', '42,*');
         inputRef.current?.blur();
       }
     });
-  }, [inputRef]);
+  }, [inputRef, handleKeyDown]);
 
   const updateContents = useCallback(async () => {
+    // Every time we update, make sure our event listeners aren't messed up...
+    for (let i = 0; i < top.frames.length; i++) {
+      const frame = top.frames[i];
+      frame.onkeydown = handleKeyDown;
+    }
     try {
       const response = await fetch(`/KoLmafia/messageUpdate?pwd=${pwd}`);
       const html = await response.text();
@@ -70,7 +86,7 @@ const App = () => {
     } catch (e) {
       console.log(e);
     }
-  }, [displayRef]);
+  }, [displayRef, handleKeyDown]);
 
   const handleCommand = useCallback(
     async command => {
