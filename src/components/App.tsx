@@ -1,4 +1,4 @@
-import { Fragment, useCallback, useMemo, useRef, useState } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Global } from '@emotion/react';
 import GcliDisplay from './GcliDisplay';
 import useInterval from '../hooks/useInterval';
@@ -6,12 +6,40 @@ import GcliInput from './GcliInput';
 
 const LINE_COUNT_LIMIT = 300;
 
+const getFrameset = () => {
+  let frameElement: Element | null = window.frameElement;
+  while (frameElement && frameElement.tagName.toLowerCase() !== 'frameset') {
+    frameElement = frameElement.parentElement;
+  }
+  return frameElement;
+};
+
 const App = () => {
   const [gcliContents, setGcliContents] = useState([] as { id: number; text: string; lineCount: number }[]);
   const displayRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const pwd = useMemo(() => document.getElementsByTagName('body')[0]?.getAttribute('data-pwd') || '', []);
+
+  useEffect(() => {
+    for (let i = 0; i < top.frames.length; i++) {
+      const frame = top.frames[i];
+      frame.addEventListener('keydown', event => {
+        if (event.key === '`') {
+          event.preventDefault();
+          getFrameset()?.setAttribute('rows', '50%,50%');
+          inputRef.current?.focus();
+        }
+      });
+    }
+    window.addEventListener('keydown', event => {
+      console.log(event.key);
+      if (event.key === 'Esc' || event.key === 'Escape') {
+        getFrameset()?.setAttribute('rows', '42,*');
+        inputRef.current?.blur();
+      }
+    });
+  }, [inputRef]);
 
   const updateContents = useCallback(async () => {
     try {
@@ -31,7 +59,6 @@ const App = () => {
           return [...gcliContents.slice(keepIndex), { id: new Date().getTime(), text: html, lineCount }];
         });
         displayRef.current?.scrollTo(0, displayRef.current?.scrollHeight);
-        if (inputRef.current !== null) inputRef.current.value = '';
       }
     } catch (e) {
       console.log(e);
@@ -41,6 +68,7 @@ const App = () => {
   const handleCommand = useCallback(
     async command => {
       try {
+        if (inputRef.current !== null) inputRef.current.value = '';
         await fetch(`/KoLmafia/submitCommand?pwd=${pwd}&cmd=${command}`, {
           method: 'GET',
         });
@@ -54,7 +82,7 @@ const App = () => {
     [pwd]
   );
 
-  useInterval(updateContents, 500);
+  useInterval(updateContents, 2000);
 
   return (
     <Fragment>
