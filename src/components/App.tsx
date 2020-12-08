@@ -28,6 +28,13 @@ const expandFrameListener = (inputRef: RefObject<HTMLInputElement>, event: Keybo
   }
 };
 
+const unloadFrameCallback = (frame: Window, onKeyDown: (event: KeyboardEvent) => void) => {
+  top.setTimeout(() => {
+    frame.onkeydown = onKeyDown;
+    frame.addEventListener('unload', unloadFrameCallback.bind(null, frame, onKeyDown));
+  }, 10);
+};
+
 const App = () => {
   const [gcliContents, setGcliContents] = useState([] as { id: number; text: string; lineCount: number }[]);
   const displayRef = useRef<HTMLDivElement>(null);
@@ -37,12 +44,7 @@ const App = () => {
 
   const handleKeyDown = useMemo(() => expandFrameListener.bind(null, inputRef), [inputRef]);
 
-  const handleUnloadFrame = useCallback(
-    (frame: Window) => {
-      top.setTimeout(() => frame.addEventListener('keydown', handleKeyDown), 10);
-    },
-    [handleKeyDown]
-  );
+  const handleUnloadFrame = useCallback(frame => unloadFrameCallback(frame, handleKeyDown), [handleKeyDown]);
 
   useEffect(() => {
     for (let i = 0; i < top.frames.length; i++) {
@@ -57,7 +59,7 @@ const App = () => {
         inputRef.current?.blur();
       }
     });
-  }, [inputRef, handleKeyDown]);
+  }, [inputRef, handleKeyDown, handleUnloadFrame]);
 
   const updateContents = useCallback(async () => {
     // Every time we update, make sure our event listeners aren't messed up...
