@@ -1,4 +1,4 @@
-import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, RefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Global } from '@emotion/react';
 import GcliDisplay from './GcliDisplay';
 import useInterval from '../hooks/useInterval';
@@ -14,6 +14,18 @@ const getFrameset = () => {
   return frameElement;
 };
 
+const expandFrameListener = (
+  inputRef: RefObject<HTMLInputElement>,
+  framesetElement: Element | null,
+  event: KeyboardEvent
+) => {
+  if (event.key === '`') {
+    event.preventDefault();
+    framesetElement?.setAttribute('rows', '50%,50%');
+    inputRef.current?.focus();
+  }
+};
+
 const App = () => {
   const [gcliContents, setGcliContents] = useState([] as { id: number; text: string; lineCount: number }[]);
   const displayRef = useRef<HTMLDivElement>(null);
@@ -22,16 +34,12 @@ const App = () => {
   const pwd = useMemo(() => document.getElementsByTagName('body')[0]?.getAttribute('data-pwd') || '', []);
 
   useEffect(() => {
+    const framesetElement = getFrameset();
     for (let i = 0; i < top.frames.length; i++) {
       const frame = top.frames[i];
-      frame.addEventListener('keydown', event => {
-        if (event.key === '`') {
-          event.preventDefault();
-          getFrameset()?.setAttribute('rows', '50%,50%');
-          inputRef.current?.focus();
-        }
-      });
+      frame.addEventListener('keydown', expandFrameListener.bind(null, inputRef, framesetElement));
     }
+    top.addEventListener('keydown', expandFrameListener.bind(null, inputRef, framesetElement));
     window.addEventListener('keydown', event => {
       if (event.key === 'Esc' || event.key === 'Escape') {
         getFrameset()?.setAttribute('rows', '42,*');
