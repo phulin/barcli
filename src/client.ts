@@ -10,5 +10,6 @@ if (awesome !== null) {
   const reactRoot = document.createElement('div');
   reactRoot.id = 'react-root';
   awesome.appendChild(reactRoot);
-  ReactDOM.render(createElement(App, {}), reactRoot);
+  const rowsAbove = document.querySelectorAll('#awesome .dragarea > .custom').length;
+  ReactDOM.render(createElement(App, { rowsAbove }), reactRoot);
 }

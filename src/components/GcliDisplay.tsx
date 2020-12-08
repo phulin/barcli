@@ -14,6 +14,7 @@ const GcliDisplay = ({
         border: '1px solid black',
         padding: '3px',
         textAlign: 'left',
+        fontSize: 'small',
         flex: '1 1 auto',
         overflow: 'scroll',
       }}

@@ -36,7 +36,7 @@ const unloadFrameCallback = (frame: Window, onKeyDown: (event: KeyboardEvent) =>
   }, 10);
 };
 
-const App = () => {
+const App = ({ rowsAbove }: { rowsAbove: number }) => {
   const [gcliContents, setGcliContents] = useState([] as { id: number; text: string; lineCount: number }[]);
   const displayRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -108,7 +108,7 @@ const App = () => {
       <Global
         styles={{
           '#react-root': {
-            height: 'calc(100% - 33px - 0.5rem)',
+            height: `calc(100% - ${rowsAbove * 33}px - 0.5rem)`,
           },
           '#react-root *': {
             boxSizing: 'border-box',
