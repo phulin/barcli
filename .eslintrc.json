@@ -1,0 +1,19 @@
+{
+  "extends": [
+    "plugin:react/recommended",
+    "./node_modules/gts/"
+  ],
+  "rules": {
+    "react/react-in-jsx-scope": "off",
+    "node/no-unpublished-import": "off",
+    "prefer-template": "error"
+  },
+  "parserOptions": {
+    "ecmaVersion": 2020,
+    "ecmaFeatures": {
+      "jsx": true
+    },
+    "sourceType": "module"
+  },
+  "plugins": ["@emotion"]
+}

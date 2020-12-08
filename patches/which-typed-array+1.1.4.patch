@@ -1,0 +1,13 @@
+diff --git a/node_modules/which-typed-array/index.js b/node_modules/which-typed-array/index.js
+index a49a04d..3b2fea4 100644
+--- a/node_modules/which-typed-array/index.js
++++ b/node_modules/which-typed-array/index.js
+@@ -6,7 +6,7 @@ var callBound = require('call-bind/callBound');
+ 
+ var $toString = callBound('Object.prototype.toString');
+ var hasSymbols = require('has-symbols')();
+-var hasToStringTag = hasSymbols && typeof Symbol.toStringTag === 'symbol';
++var hasToStringTag = hasSymbols && typeof Symbol.toStringTag === 'symbol' && Symbol.toStringTag in Float32Array;
+ 
+ var typedArrays = availableTypedArrays();
+ 

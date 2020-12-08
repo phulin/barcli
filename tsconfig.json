@@ -1,0 +1,18 @@
+{
+  "extends": "./node_modules/gts/tsconfig-google.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "build-types",
+    "esModuleInterop": true,
+    "jsx": "react-jsx",
+    "jsxImportSource": "@emotion/react",
+    "lib": ["ESNext", "DOM"]
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx"
+  ], 
+  "declaration": false,                      /* Generates corresponding '.d.ts' file. */
+  "isolatedModules": true,                  /* Transpile each file as a separate module (similar to 'ts.transpileModule'). */
+  "noEmit": true,                            /* Do not emit outputs. */
+}
