@@ -31,7 +31,7 @@ function main() {
   \***************************/
 /***/ ((module) => {
 
-module.exports = require("build/relay/node_modules/kolmafia");;
+module.exports = require("kolmafia");;
 
 /***/ })
 

@@ -38,6 +38,7 @@ const unloadFrameCallback = (frame: Window, onKeyDown: (event: KeyboardEvent) =>
 
 const App = ({ rowsAbove }: { rowsAbove: number }) => {
   const [gcliContents, setGcliContents] = useState([] as { id: number; text: string; lineCount: number }[]);
+  const [errorCount, setErrorCount] = useState(0);
   const displayRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -80,9 +81,10 @@ const App = ({ rowsAbove }: { rowsAbove: number }) => {
         displayRef.current?.scrollTo(0, displayRef.current?.scrollHeight);
       }
     } catch (e) {
+      setErrorCount(errorCount => errorCount + 1);
       console.log(e);
     }
-  }, [displayRef, handleKeyDown]);
+  }, [displayRef, handleKeyDown, pwd]);
 
   const handleCommand = useCallback(
     async command => {
@@ -91,17 +93,19 @@ const App = ({ rowsAbove }: { rowsAbove: number }) => {
         await fetch(`/KoLmafia/submitCommand?pwd=${pwd}&cmd=${command}`, {
           method: 'GET',
         });
-        for (const delayMs of [100, 200, 300, 500, 700, 1000, 1300, 1600, 2000, 2500, 3200]) {
+        setErrorCount(0);
+        for (const delayMs of [100, 200, 300, 500, 700, 1000, 1300, 1600, 2000, 2500, 3200, 6000]) {
           setTimeout(updateContents, delayMs);
         }
       } catch (e) {
+        setErrorCount(errorCount => errorCount + 1);
         console.log(e);
       }
     },
-    [pwd]
+    [pwd, updateContents]
   );
 
-  useInterval(updateContents, 2000);
+  useInterval(updateContents, 2000, errorCount >= 3);
 
   return (
     <Fragment>
